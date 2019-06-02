@@ -4,12 +4,14 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -20,6 +22,7 @@ import com.bumptech.glide.Glide;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -64,14 +67,19 @@ public class MainActivity extends AppCompatActivity {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                startActivityForResult(cameraIntent, REQUEST_TAKE_PICTURE);
+
+                if (photoFile != null) {
+                    Uri photoUri = FileProvider.getUriForFile(this, "com.levo.permissions", photoFile);
+                    cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
+                    startActivityForResult(cameraIntent, REQUEST_TAKE_PICTURE);
+                }
             }
         }
     }
 
     private File createImage() throws IOException {
         String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String imageFileName = "JPEG_" + timestamp;
+        String imageFileName = "JPEG_" + timestamp + "_";
 
         // put a directory
         File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
@@ -113,9 +121,9 @@ public class MainActivity extends AppCompatActivity {
 
         if (requestCode == REQUEST_TAKE_PICTURE && resultCode == RESULT_OK)
         {
-            Bitmap photo = (Bitmap) data.getExtras().get("data");
-            ivPhoto.setImageBitmap(photo);
-            // Glide.with(this).load(currentPathImage).into(ivPhoto);
+            // Bitmap photo = (Bitmap) data.getExtras().get("data");
+            // ivPhoto.setImageBitmap(photo);
+            Glide.with(this).load(currentPathImage).into(ivPhoto);
         }
     }
 }
